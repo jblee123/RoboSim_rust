@@ -1,0 +1,8 @@
+# Handle line endings automatically for files detected as text
+# and leave all files detected as binary untouched.
+* text=auto
+
+# Make sure *nix script files always have LF endings. This will include python
+# files since we use those as scripts in some cases.
+*.sh text eol=lf
+*.py text eol=lf
