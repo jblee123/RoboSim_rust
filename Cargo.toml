@@ -1,0 +1,7 @@
+[workspace]
+
+members = [
+    "robo_sim_console",
+    "robo_sim_robot",
+    "robo_sim_utils",
+]
