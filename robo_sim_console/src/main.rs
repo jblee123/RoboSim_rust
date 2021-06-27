@@ -3,6 +3,8 @@ extern crate piston_window;
 pub mod display;
 pub mod environment;
 
+use robo_sim_utils::color::*;
+
 use environment as environ;
 use piston_window as pw;
 
@@ -17,7 +19,7 @@ fn main() {
     env.add_wall(environ::Wall::new(15.0, 35.0, 25.0, 35.0));
     env.add_wall(environ::Wall::new(25.0, 35.0, 35.0, 25.0));
     env.add_wall(environ::Wall::new(35.0, 25.0, 35.0, 15.0));
-    env.add_object(environ::Object::new(49.0, 49.0, 1.0, environ::Color::RED));
+    env.add_object(environ::Object::new(49.0, 49.0, 1.0, Color::RED));
 
     // env.add_wall(environ::Wall::new(15.0, 15.0, 15.0, 35.0));
     // env.add_wall(environ::Wall::new(15.0, 35.0, 35.0, 35.0));

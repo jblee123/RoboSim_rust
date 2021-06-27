@@ -1,3 +1,6 @@
+pub mod color;
+pub mod comms;
+pub mod messages;
 pub mod ray;
 pub mod robot_position;
 pub mod vec3d;
