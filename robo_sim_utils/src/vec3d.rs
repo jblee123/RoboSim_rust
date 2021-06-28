@@ -12,7 +12,7 @@ use num_traits::Float;
 
 use super::*;
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Default)]
 pub struct Vec3d<T: Float> {
     pub x: T,
     pub y: T,
@@ -197,6 +197,19 @@ mod tests {
                 x: 5.0,
                 y: 7.0,
                 z: 9.0
+            }
+        );
+    }
+
+    #[test]
+    fn default_vec() {
+        let vec: Vec3d<f32> = Default::default();
+        assert_eq!(
+            vec,
+            Vec3d {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0
             }
         );
     }

@@ -1,6 +1,6 @@
 use super::vec3d;
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy, Default)]
 pub struct RobotPosition {
     pub location: vec3d::Vec3d<f32>,
     pub heading: f32,

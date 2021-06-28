@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use super::color::Color;
 use super::robot_position::RobotPosition;
 
@@ -18,6 +20,8 @@ pub enum MessageType {
 
 pub trait Message {
     fn get_type(&self) -> MessageType;
+    fn as_any(&self) -> &dyn Any;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,6 +62,14 @@ impl Message for AliveMsg {
     fn get_type(&self) -> MessageType {
         self.msg_type
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,6 +90,14 @@ impl StartMsg {
 impl Message for StartMsg {
     fn get_type(&self) -> MessageType {
         self.msg_type
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
     }
 }
 
@@ -102,6 +122,14 @@ impl Message for RequestPositionMsg {
     fn get_type(&self) -> MessageType {
         self.msg_type
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -125,6 +153,14 @@ impl Message for PositionMsg {
     fn get_type(&self) -> MessageType {
         self.msg_type
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -145,6 +181,14 @@ impl KillMsg {
 impl Message for KillMsg {
     fn get_type(&self) -> MessageType {
         self.msg_type
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
     }
 }
 
@@ -169,6 +213,14 @@ impl Message for RobotDyingMsg {
     fn get_type(&self) -> MessageType {
         self.msg_type
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -191,6 +243,14 @@ impl GetObstaclesMsg {
 impl Message for GetObstaclesMsg {
     fn get_type(&self) -> MessageType {
         self.msg_type
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
     }
 }
 
@@ -215,6 +275,14 @@ impl Message for ObsReadingsMsg {
     fn get_type(&self) -> MessageType {
         self.msg_type
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -235,6 +303,14 @@ impl PauseMsg {
 impl Message for PauseMsg {
     fn get_type(&self) -> MessageType {
         self.msg_type
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
     }
 }
 
@@ -263,6 +339,14 @@ impl Message for MoveMsg {
     fn get_type(&self) -> MessageType {
         self.msg_type
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -287,5 +371,13 @@ impl SpinMsg {
 impl Message for SpinMsg {
     fn get_type(&self) -> MessageType {
         self.msg_type
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
     }
 }
