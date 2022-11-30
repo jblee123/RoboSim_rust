@@ -11,7 +11,7 @@ use piston_window as pw;
 fn main() {
     const ENV_WIDTH_M: f32 = 50.0;
     const ENV_HEIGHT_M: f32 = 50.0;
-    const ENV_SCALE_PIX_PER_METER: f32 = 20.0;
+    const ENV_SCALE_PIX_PER_METER: f32 = 15.0;
 
     let mut env = environ::Environment::new(ENV_WIDTH_M, ENV_HEIGHT_M);
     env.add_obstacle(environ::Obstacle::new(10.0, 10.0, 2.0));

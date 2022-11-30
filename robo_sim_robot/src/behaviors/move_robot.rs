@@ -1,5 +1,6 @@
 use std::any::Any;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 use robo_sim_utils::vec3d::*;
 
@@ -7,22 +8,22 @@ use super::super::robot_interfaces::robot_interface::*;
 
 use super::behavior::*;
 
-pub struct MoveRobot<'a> {
+pub struct MoveRobot {
     pub name: String,
     pub cycle: u64,
-    pub robot_interface: &'a dyn RobotInterface,
-    pub movement_input: &'a RefCell<dyn Behavior>,
-    pub base_speed_input: &'a RefCell<dyn Behavior>,
-    pub max_speed_input: &'a RefCell<dyn Behavior>,
+    pub robot_interface: Rc<RefCell<dyn RobotInterface>>,
+    pub movement_input: Rc<RefCell<dyn Behavior>>,
+    pub base_speed_input: Rc<RefCell<dyn Behavior>>,
+    pub max_speed_input: Rc<RefCell<dyn Behavior>>,
 }
 
-impl<'a> MoveRobot<'a> {
+impl MoveRobot {
     pub fn new(
         name: Option<&str>,
-        robot_interface: &'a dyn RobotInterface,
-        movement_input: &'a RefCell<dyn Behavior>,
-        base_speed_input: &'a RefCell<dyn Behavior>,
-        max_speed_input: &'a RefCell<dyn Behavior>,
+        robot_interface: Rc<RefCell<dyn RobotInterface>>,
+        movement_input: Rc<RefCell<dyn Behavior>>,
+        base_speed_input: Rc<RefCell<dyn Behavior>>,
+        max_speed_input: Rc<RefCell<dyn Behavior>>,
     ) -> Self {
         Self {
             name: get_behavior_name(name),
@@ -73,13 +74,15 @@ impl<'a> MoveRobot<'a> {
             move_cmd = move_cmd.to_unit() * max_speed;
         }
 
-        self.robot_interface.cmd_move(move_cmd.x, move_cmd.y);
+        self.robot_interface
+            .borrow()
+            .cmd_move(move_cmd.x, move_cmd.y);
 
         &DEFAULT_OUTPUT
     }
 }
 
-impl Behavior for MoveRobot<'_> {
+impl Behavior for MoveRobot {
     fn get_name(&self) -> &str {
         MoveRobot::get_name(self)
     }

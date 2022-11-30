@@ -1,6 +1,7 @@
 use std::any::Any;
 use std::cell::RefCell;
 use std::f32::consts::PI;
+use std::rc::Rc;
 
 use rand;
 
@@ -8,16 +9,16 @@ use robo_sim_utils::vec3d::*;
 
 use super::behavior::*;
 
-pub struct Wander<'a> {
+pub struct Wander {
     pub name: String,
     pub cycle: u64,
-    pub persistence_input: &'a RefCell<dyn Behavior>,
+    pub persistence_input: Rc<RefCell<dyn Behavior>>,
     pub same_direction_count: u32,
     pub output: Vec3d<f32>,
 }
 
-impl<'a> Wander<'a> {
-    pub fn new(name: Option<&str>, persistence_input: &'a RefCell<dyn Behavior>) -> Self {
+impl<'a> Wander {
+    pub fn new(name: Option<&str>, persistence_input: Rc<RefCell<dyn Behavior>>) -> Self {
         Self {
             name: get_behavior_name(name),
             cycle: 0,
@@ -59,7 +60,7 @@ impl<'a> Wander<'a> {
     }
 }
 
-impl Behavior for Wander<'_> {
+impl Behavior for Wander {
     fn get_name(&self) -> &str {
         Wander::get_name(self)
     }

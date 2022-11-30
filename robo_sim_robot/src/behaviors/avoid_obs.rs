@@ -1,25 +1,26 @@
 use std::any::Any;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 use robo_sim_utils::vec3d::*;
 
 use super::behavior::*;
 
-pub struct AvoidObs<'a> {
+pub struct AvoidObs {
     pub name: String,
     pub cycle: u64,
-    pub obs_list_input: &'a RefCell<dyn Behavior>,
-    pub safety_margin_input: &'a RefCell<dyn Behavior>,
-    pub sphere_of_influence_input: &'a RefCell<dyn Behavior>,
+    pub obs_list_input: Rc<RefCell<dyn Behavior>>,
+    pub safety_margin_input: Rc<RefCell<dyn Behavior>>,
+    pub sphere_of_influence_input: Rc<RefCell<dyn Behavior>>,
     pub output: Vec3d<f32>,
 }
 
-impl<'a> AvoidObs<'a> {
+impl<'a> AvoidObs {
     pub fn new(
         name: Option<&str>,
-        obs_list_input: &'a RefCell<dyn Behavior>,
-        safety_margin_input: &'a RefCell<dyn Behavior>,
-        sphere_of_influence_input: &'a RefCell<dyn Behavior>,
+        obs_list_input: Rc<RefCell<dyn Behavior>>,
+        safety_margin_input: Rc<RefCell<dyn Behavior>>,
+        sphere_of_influence_input: Rc<RefCell<dyn Behavior>>,
     ) -> Self {
         Self {
             name: get_behavior_name(name),
@@ -79,7 +80,7 @@ impl<'a> AvoidObs<'a> {
     }
 }
 
-impl Behavior for AvoidObs<'_> {
+impl Behavior for AvoidObs {
     fn get_name(&self) -> &str {
         AvoidObs::get_name(self)
     }

@@ -1,4 +1,6 @@
 use std::any::Any;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use robo_sim_utils::robot_position::*;
 
@@ -6,15 +8,15 @@ use super::super::robot_interfaces::robot_interface::*;
 
 use super::behavior::*;
 
-pub struct GetPosition<'a> {
+pub struct GetPosition {
     pub name: String,
     pub cycle: u64,
-    pub robot_interface: &'a dyn RobotInterface,
+    pub robot_interface: Rc<RefCell<dyn RobotInterface>>,
     pub pos: RobotPosition,
 }
 
-impl<'a> GetPosition<'a> {
-    pub fn new(name: Option<&str>, robot_interface: &'a dyn RobotInterface) -> Self {
+impl GetPosition {
+    pub fn new(name: Option<&str>, robot_interface: Rc<RefCell<dyn RobotInterface>>) -> Self {
         Self {
             name: get_behavior_name(name),
             cycle: 0,
@@ -29,7 +31,7 @@ impl<'a> GetPosition<'a> {
 
     pub fn get_output(&mut self, cycle: u64) -> &dyn Any {
         if cycle != self.cycle {
-            self.pos = self.robot_interface.get_position();
+            self.pos = self.robot_interface.borrow().get_position();
             self.cycle = cycle;
         }
 
@@ -37,7 +39,7 @@ impl<'a> GetPosition<'a> {
     }
 }
 
-impl Behavior for GetPosition<'_> {
+impl Behavior for GetPosition {
     fn get_name(&self) -> &str {
         GetPosition::get_name(self)
     }

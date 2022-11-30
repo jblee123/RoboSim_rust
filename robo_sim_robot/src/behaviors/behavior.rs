@@ -1,4 +1,5 @@
 use std::any::Any;
+use std::sync::atomic::{AtomicU32, Ordering};
 
 pub fn downcast_input<'a, T: 'static>(
     any: &'a dyn std::any::Any,
@@ -17,12 +18,16 @@ pub fn downcast_input<'a, T: 'static>(
 }
 
 fn get_next_anon_name() -> String {
-    static mut NEXT_ID: u32 = 0;
+    static mut NEXT_ID: AtomicU32 = AtomicU32::new(0);
     let id;
     unsafe {
-        id = NEXT_ID;
-        NEXT_ID += 1;
+        id = NEXT_ID.fetch_add(1, Ordering::SeqCst);
     }
+    // static mut NEXT_ID: u32 = 0;
+    // unsafe {
+    //     id = NEXT_ID;
+    //     NEXT_ID += 1;
+    // }
     format!("AN_{}", id)
 }
 

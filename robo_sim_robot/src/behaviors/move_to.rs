@@ -1,19 +1,20 @@
 use std::any::Any;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 use robo_sim_utils::vec3d::*;
 
 use super::behavior::*;
 
-pub struct MoveTo<'a> {
+pub struct MoveTo {
     pub name: String,
     pub cycle: u64,
-    pub target_input: &'a RefCell<dyn Behavior>,
+    pub target_input: Rc<RefCell<dyn Behavior>>,
     pub output: Vec3d<f32>,
 }
 
-impl<'a> MoveTo<'a> {
-    pub fn new(name: Option<&str>, target_input: &'a RefCell<dyn Behavior>) -> Self {
+impl MoveTo {
+    pub fn new(name: Option<&str>, target_input: Rc<RefCell<dyn Behavior>>) -> Self {
         Self {
             name: get_behavior_name(name),
             cycle: 0,
@@ -46,7 +47,7 @@ impl<'a> MoveTo<'a> {
     }
 }
 
-impl Behavior for MoveTo<'_> {
+impl Behavior for MoveTo {
     fn get_name(&self) -> &str {
         MoveTo::get_name(self)
     }

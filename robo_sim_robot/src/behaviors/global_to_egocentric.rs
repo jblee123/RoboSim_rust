@@ -1,5 +1,6 @@
 use std::any::Any;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 use robo_sim_utils::vec3d::*;
 
@@ -7,19 +8,19 @@ use robo_sim_utils::robot_position::*;
 
 use super::behavior::*;
 
-pub struct GlobalToEgocentric<'a> {
+pub struct GlobalToEgocentric {
     pub name: String,
     pub cycle: u64,
-    pub robot_pos_input: &'a RefCell<dyn Behavior>,
-    pub global_pos_input: &'a RefCell<dyn Behavior>,
+    pub robot_pos_input: Rc<RefCell<dyn Behavior>>,
+    pub global_pos_input: Rc<RefCell<dyn Behavior>>,
     pub output: Vec3d<f32>,
 }
 
-impl<'a> GlobalToEgocentric<'a> {
+impl GlobalToEgocentric {
     pub fn new(
         name: Option<&str>,
-        robot_pos_input: &'a RefCell<dyn Behavior>,
-        global_pos_input: &'a RefCell<dyn Behavior>,
+        robot_pos_input: Rc<RefCell<dyn Behavior>>,
+        global_pos_input: Rc<RefCell<dyn Behavior>>,
     ) -> Self {
         Self {
             name: get_behavior_name(name),
@@ -61,7 +62,7 @@ impl<'a> GlobalToEgocentric<'a> {
     }
 }
 
-impl Behavior for GlobalToEgocentric<'_> {
+impl Behavior for GlobalToEgocentric {
     fn get_name(&self) -> &str {
         GlobalToEgocentric::get_name(self)
     }

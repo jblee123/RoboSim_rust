@@ -1,23 +1,24 @@
 use std::any::Any;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 use robo_sim_utils::vec3d::*;
 
 use super::behavior::*;
 
-pub struct SumVectors<'a> {
+pub struct SumVectors {
     pub name: String,
     pub cycle: u64,
-    pub vectors_input: Vec<&'a RefCell<dyn Behavior>>,
-    pub weights_input: Vec<&'a RefCell<dyn Behavior>>,
+    pub vectors_input: Vec<Rc<RefCell<dyn Behavior>>>,
+    pub weights_input: Vec<Rc<RefCell<dyn Behavior>>>,
     pub output: Vec3d<f32>,
 }
 
-impl<'a> SumVectors<'a> {
+impl SumVectors {
     pub fn new(
         name: Option<&str>,
-        vectors_input: Vec<&'a RefCell<dyn Behavior>>,
-        weights_input: Vec<&'a RefCell<dyn Behavior>>,
+        vectors_input: Vec<Rc<RefCell<dyn Behavior>>>,
+        weights_input: Vec<Rc<RefCell<dyn Behavior>>>,
     ) -> Self {
         Self {
             name: get_behavior_name(name),
@@ -61,7 +62,7 @@ impl<'a> SumVectors<'a> {
     }
 }
 
-impl Behavior for SumVectors<'_> {
+impl Behavior for SumVectors {
     fn get_name(&self) -> &str {
         SumVectors::get_name(self)
     }

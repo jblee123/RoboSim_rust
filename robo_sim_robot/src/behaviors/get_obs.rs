@@ -1,18 +1,20 @@
 use std::any::Any;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use super::super::robot_interfaces::robot_interface::*;
 
 use super::behavior::*;
 
-pub struct GetObs<'a> {
+pub struct GetObs {
     pub name: String,
     pub cycle: u64,
-    pub robot_interface: &'a dyn RobotInterface,
+    pub robot_interface: Rc<RefCell<dyn RobotInterface>>,
     pub readings: Vec<(f32, f32)>,
 }
 
-impl<'a> GetObs<'a> {
-    pub fn new(name: Option<&str>, robot_interface: &'a dyn RobotInterface) -> Self {
+impl GetObs {
+    pub fn new(name: Option<&str>, robot_interface: Rc<RefCell<dyn RobotInterface>>) -> Self {
         Self {
             name: get_behavior_name(name),
             cycle: 0,
@@ -27,7 +29,7 @@ impl<'a> GetObs<'a> {
 
     pub fn get_output(&mut self, cycle: u64) -> &dyn Any {
         if cycle != self.cycle {
-            self.readings = self.robot_interface.get_obs_readings();
+            self.readings = self.robot_interface.borrow().get_obs_readings();
             self.cycle = cycle;
         }
 
@@ -35,7 +37,7 @@ impl<'a> GetObs<'a> {
     }
 }
 
-impl Behavior for GetObs<'_> {
+impl Behavior for GetObs {
     fn get_name(&self) -> &str {
         GetObs::get_name(self)
     }

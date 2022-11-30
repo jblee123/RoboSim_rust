@@ -1,27 +1,88 @@
 use std::any::Any;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 use robo_sim_utils::vec3d::*;
 
 use super::super::robot_interfaces::robot_interface::*;
 
+use super::avoid_obs::*;
 use super::behavior::*;
+use super::get_obs::*;
+use super::get_position::*;
+use super::global_to_egocentric::*;
+use super::literal::*;
+use super::move_robot::*;
+use super::move_to::*;
+use super::sum_vectors::*;
+use super::wander::*;
 
-pub struct TestGoto<'a> {
+pub struct TestGoto {
     pub name: String,
     pub cycle: u64,
-    pub robot_interface: &'a dyn RobotInterface,
+    pub robot_interface: Rc<RefCell<dyn RobotInterface>>,
+
+    move_robot: MoveRobot,
 }
 
-impl<'a> TestGoto<'a> {
-    pub fn new(
-        name: Option<&str>,
-        robot_interface: &'a dyn RobotInterface,
-    ) -> Self {
+impl TestGoto {
+    pub fn new(name: Option<&str>, robot_interface: Rc<RefCell<dyn RobotInterface>>) -> Self {
+        let get_pos = Rc::new(RefCell::new(GetPosition::new(
+            None,
+            robot_interface.clone(),
+        )));
+
+        let global_target_pos = Rc::new(RefCell::new(LiteralVec3dF32::new(
+            None,
+            Vec3d::<f32>::new(49f32, 49f32, 0f32),
+        )));
+
+        let move_to = Rc::new(RefCell::new(MoveTo::new(
+            None,
+            Rc::new(RefCell::new(GlobalToEgocentric::new(
+                None,
+                get_pos,
+                global_target_pos,
+            ))),
+        )));
+
+        let get_obs = Rc::new(RefCell::new(GetObs::new(
+            None,
+            robot_interface.clone(),
+        )));
+
+        let avoid_obs = Rc::new(RefCell::new(AvoidObs::new(
+            None,
+            get_obs,
+            Rc::new(RefCell::new(LiteralF32::new(None, 1.5f32))),
+            Rc::new(RefCell::new(LiteralF32::new(None, 5f32))),
+        )));
+
+        let wander = Rc::new(RefCell::new(Wander::new(
+            None,
+            Rc::new(RefCell::new(LiteralF32::new(None, 10f32))),
+        )));
+
         Self {
             name: get_behavior_name(name),
             cycle: 0,
-            robot_interface: robot_interface,
+            robot_interface: robot_interface.clone(),
+
+            move_robot: MoveRobot::new(
+                None,
+                robot_interface.clone(),
+                Rc::new(RefCell::new(SumVectors::new(
+                    None,
+                    vec![move_to, avoid_obs, wander],
+                    vec![
+                        Rc::new(RefCell::new(LiteralF32::new(None, 1f32))),
+                        Rc::new(RefCell::new(LiteralF32::new(None, 1f32))),
+                        Rc::new(RefCell::new(LiteralF32::new(None, 0.3f32))),
+                    ],
+                ))),
+                Rc::new(RefCell::new(LiteralF32::new(None, 1f32))),
+                Rc::new(RefCell::new(LiteralF32::new(None, 1f32))),
+            ),
         }
     }
 
@@ -30,47 +91,11 @@ impl<'a> TestGoto<'a> {
     }
 
     pub fn get_output(&mut self, cycle: u64) -> &dyn Any {
-        const DEFAULT_OUTPUT: i32 = 0;
-
-        if cycle == self.cycle {
-            return &DEFAULT_OUTPUT;
-        }
-        self.cycle = cycle;
-
-        // let mut movement_input_mut = self.movement_input.borrow_mut();
-        // let mut base_speed_input_mut = self.base_speed_input.borrow_mut();
-        // let mut max_speed_input_mut = self.max_speed_input.borrow_mut();
-
-        // let movement = *downcast_input::<Vec3d<f32>>(
-        //     movement_input_mut.get_output(cycle),
-        //     "TestGoto",
-        //     "movement_input",
-        // );
-
-        // let base_speed = *downcast_input::<f32>(
-        //     base_speed_input_mut.get_output(cycle),
-        //     "MoveRobot",
-        //     "base_speed_input",
-        // );
-
-        // let max_speed = *downcast_input::<f32>(
-        //     max_speed_input_mut.get_output(cycle),
-        //     "MoveRobot",
-        //     "max_speed_input",
-        // );
-
-        // let mut move_cmd = movement * base_speed;
-        // if move_cmd.len() > max_speed {
-        //     move_cmd = move_cmd.to_unit() * max_speed;
-        // }
-
-        // self.robot_interface.cmd_move(move_cmd.x, move_cmd.y);
-
-        &DEFAULT_OUTPUT
+        self.move_robot.get_output(cycle)
     }
 }
 
-impl Behavior for TestGoto<'_> {
+impl Behavior for TestGoto {
     fn get_name(&self) -> &str {
         TestGoto::get_name(self)
     }
