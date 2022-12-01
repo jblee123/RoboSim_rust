@@ -46,10 +46,7 @@ impl TestGoto {
             ))),
         )));
 
-        let get_obs = Rc::new(RefCell::new(GetObs::new(
-            None,
-            robot_interface.clone(),
-        )));
+        let get_obs = Rc::new(RefCell::new(GetObs::new(None, robot_interface.clone())));
 
         let avoid_obs = Rc::new(RefCell::new(AvoidObs::new(
             None,

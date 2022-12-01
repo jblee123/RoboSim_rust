@@ -81,7 +81,7 @@ impl RobotComm {
             msgs = std::mem::take(&mut self.queued_msgs);
         }
 
-        // keep going while there's messages waiting
+        // keep going while there are messages waiting
         loop {
             let mut buf = [0; 1024];
             match sock.recv_from(&mut buf) {
