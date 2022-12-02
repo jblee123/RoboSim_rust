@@ -1,5 +1,6 @@
 extern crate piston_window;
 
+pub mod console_comms;
 pub mod display;
 pub mod environment;
 
