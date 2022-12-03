@@ -18,10 +18,12 @@ impl Color {
 
     pub const BLACK: Color = Color::new(0, 0, 0, 255);
     pub const RED: Color = Color::new(255, 0, 0, 255);
+    pub const BLUE: Color = Color::new(0, 0, 255, 255);
 
     pub fn from_str(color_str: &str) -> Self {
         match color_str.to_lowercase().as_str() {
             "red" => Self::RED,
+            "blue" => Self::BLUE,
             _ => Self::BLACK,
         }
     }

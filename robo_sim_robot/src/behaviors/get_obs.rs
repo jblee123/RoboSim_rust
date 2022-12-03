@@ -2,6 +2,8 @@ use std::any::Any;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use robo_sim_utils::vec3d::Vec3d;
+
 use super::super::robot_interfaces::robot_interface::*;
 
 use super::behavior::*;
@@ -10,7 +12,7 @@ pub struct GetObs {
     pub name: String,
     pub cycle: u64,
     pub robot_interface: Rc<RefCell<dyn RobotInterface>>,
-    pub readings: Vec<(f32, f32)>,
+    pub readings: Vec<Vec3d<f32>>,
 }
 
 impl GetObs {

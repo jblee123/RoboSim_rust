@@ -4,28 +4,7 @@ use robo_sim_utils::color::*;
 use robo_sim_utils::comms;
 use robo_sim_utils::messages::*;
 use robo_sim_utils::robot_position::*;
-
-fn downcast<'a, T: 'static>(msg: &'a Box<dyn Message>, fn_name: &str) -> &'a T {
-    match msg.as_any().downcast_ref::<T>() {
-        Some(m) => m,
-        None => panic!(
-            "Downcast from Message to {} failed in {}().",
-            std::any::type_name::<T>(),
-            fn_name
-        ),
-    }
-}
-
-fn downcast_mut<'a, T: 'static>(msg: &'a mut Box<dyn Message>, fn_name: &str) -> &'a mut T {
-    match msg.as_any_mut().downcast_mut::<T>() {
-        Some(m) => m,
-        None => panic!(
-            "Downcast from Message to {} failed in {}().",
-            std::any::type_name::<T>(),
-            fn_name
-        ),
-    }
-}
+use robo_sim_utils::vec3d::*;
 
 //#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct RobotComm {
@@ -50,17 +29,23 @@ impl RobotComm {
     pub fn open(&mut self) -> std::io::Result<()> {
         let my_port = comms::CONSOLE_PORT + self.id as u16;
         let sock_addr = SocketAddr::from(([0, 0, 0, 0], my_port));
+        println!("robot listening on socket: {}", sock_addr);
         let sock = UdpSocket::bind(sock_addr)?;
         sock.set_nonblocking(true)?;
         self.sock = Some(sock);
 
         let console_addr_str = format!("{}:{}", self.host, comms::CONSOLE_PORT);
-        let console_addr = console_addr_str.to_socket_addrs()?.next().ok_or_else(|| {
-            std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("Could not convert '{}' to sockaddr.", console_addr_str),
-            )
+        let console_addr = console_addr_str
+            .to_socket_addrs()?
+            .filter(|sock_addr| match sock_addr { SocketAddr::V4(_) => true, _ => false })
+            .next()
+            .ok_or_else(|| {
+                std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    format!("Could not convert '{}' to sockaddr.", console_addr_str),
+                )
         })?;
+        println!("robot opening socket to console: {}", console_addr);
         self.console_addr = Some(console_addr);
 
         Ok(())
@@ -97,11 +82,11 @@ impl RobotComm {
                     }
                 }
                 Err(e) => {
-                    if e.kind() == std::io::ErrorKind::WouldBlock {
-                        break;
-                    } else {
-                        panic!("recv function failed: {:?}", e);
-                    }
+                    match e.kind() {
+                        std::io::ErrorKind::WouldBlock => break,
+                        std::io::ErrorKind::ConnectionReset => break,
+                        _ => panic!("recv function failed: {:?}", e),
+                    };
                 }
             }
         }
@@ -123,11 +108,8 @@ impl RobotComm {
     fn send_msg(&self, msg_buf: &[u8]) {
         let sock = self.sock.as_ref().unwrap();
         let console_addr = self.console_addr.as_ref().unwrap();
-        match sock.send_to(msg_buf, console_addr) {
-            Err(e) => {
-                panic!("send function failed: {:?}", e);
-            }
-            _ => {}
+        if let Err(err) = sock.send_to(msg_buf, console_addr) {
+            panic!("send_msg failed to send to addr {:?}: err={:?}", console_addr, err);
         }
     }
 
@@ -149,7 +131,7 @@ impl RobotComm {
     }
 
     pub fn send_position_update(&self, pos: RobotPosition) {
-        let msg = PositionMsg::new(pos);
+        let msg = PositionMsg::new(self.id, pos);
         let msg_buf = comms::pack_position_message(msg);
         self.send_msg(msg_buf.as_slice());
     }
@@ -169,7 +151,7 @@ impl RobotComm {
         self.send_msg(msg_buf.as_slice());
     }
 
-    pub fn get_obs(&mut self) -> Vec<(f32, f32)> {
+    pub fn get_obs(&mut self) -> Vec<Vec3d<f32>> {
         let req_msg = GetObstaclesMsg::new(self.id);
         let req_msg_buf = comms::pack_get_obstacles_message(req_msg);
         self.send_msg(req_msg_buf.as_slice());

@@ -70,6 +70,7 @@ impl Controller {
 
     fn handle_start(&mut self) {
         self.paused = false;
+        println!("robot got START message");
     }
 
     fn handle_kill(&mut self, comm: &mut RobotComm) {

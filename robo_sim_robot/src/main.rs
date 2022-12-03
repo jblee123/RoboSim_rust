@@ -7,6 +7,7 @@ use std::rc::Rc;
 use getopts::Options;
 
 use robo_sim_utils::color::Color;
+use robo_sim_utils::TO_RAD_F32;
 
 use behaviors::test_goto::TestGoto;
 use robot::Robot;
@@ -66,11 +67,11 @@ fn main() {
     let mut robot_type = String::from("simulation");
     let mut x_pos = 0f32;
     let mut y_pos = 0f32;
-    let mut heading = 0f32;
+    let mut heading_rad = 0f32;
     let mut color = Color::BLACK;
     let mut max_vel = 0f32;
     let mut max_angular_vel = 0f32;
-    let mut radius = 0f32;
+    let mut radius = 0.5f32;
 
     if let Some(id_opt) = matches.opt_str("i") {
         id = id_opt.parse::<u32>().unwrap(); // ok to panic
@@ -84,16 +85,17 @@ fn main() {
         robot_type = robot_type_opt;
     }
 
-    if let Some(x_pos_opt) = matches.opt_str("T") {
+    if let Some(x_pos_opt) = matches.opt_str("x") {
         x_pos = x_pos_opt.parse::<f32>().unwrap(); // ok to panic
     }
 
-    if let Some(y_pos_opt) = matches.opt_str("T") {
+    if let Some(y_pos_opt) = matches.opt_str("y") {
         y_pos = y_pos_opt.parse::<f32>().unwrap(); // ok to panic
     }
 
-    if let Some(heading_opt) = matches.opt_str("T") {
-        heading = heading_opt.parse::<f32>().unwrap(); // ok to panic
+    if let Some(heading_opt) = matches.opt_str("d") {
+        heading_rad = heading_opt.parse::<f32>().unwrap(); // ok to panic
+        heading_rad *= TO_RAD_F32;
     }
 
     if let Some(color_opt) = matches.opt_str("c") {
@@ -106,6 +108,7 @@ fn main() {
 
     if let Some(max_angular_vel_opt) = matches.opt_str("a") {
         max_angular_vel = max_angular_vel_opt.parse::<f32>().unwrap(); // ok to panic
+        max_angular_vel *= TO_RAD_F32;
     }
 
     if let Some(radius_opt) = matches.opt_str("r") {
@@ -119,7 +122,7 @@ fn main() {
         x_pos,
         y_pos,
         0f32,
-        heading,
+        heading_rad,
         color,
         max_vel,
         max_angular_vel,
@@ -132,6 +135,7 @@ fn main() {
     )));
 
     r.add_behavior(test_goto);
+    println!("Robot starting with ID {}", id);
     r.run();
 
     // let l1 = behaviors::literal::LiteralF32::new(Some("a"), 1.0);

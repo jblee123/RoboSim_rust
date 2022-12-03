@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use robo_sim_utils::robot_position::*;
+use robo_sim_utils::vec3d::*;
 
 use super::super::robot_comm::*;
 use super::robot_interface::*;
@@ -23,7 +24,7 @@ impl SimRobotInterface {
         self.comm.borrow().sim_move(x, y)
     }
 
-    pub fn get_obs_readings(&self) -> Vec<(f32, f32)> {
+    pub fn get_obs_readings(&self) -> Vec<Vec3d<f32>> {
         self.comm.borrow_mut().get_obs()
     }
 }
@@ -37,7 +38,7 @@ impl RobotInterface for SimRobotInterface {
         SimRobotInterface::cmd_move(self, x, y)
     }
 
-    fn get_obs_readings(&self) -> Vec<(f32, f32)> {
+    fn get_obs_readings(&self) -> Vec<Vec3d<f32>> {
         SimRobotInterface::get_obs_readings(self)
     }
 }

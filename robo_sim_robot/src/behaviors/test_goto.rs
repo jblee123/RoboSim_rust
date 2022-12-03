@@ -34,7 +34,7 @@ impl TestGoto {
 
         let global_target_pos = Rc::new(RefCell::new(LiteralVec3dF32::new(
             None,
-            Vec3d::<f32>::new(49f32, 49f32, 0f32),
+            Vec3d::<f32>::new(49.0, 49.0, 0.0),
         )));
 
         let move_to = Rc::new(RefCell::new(MoveTo::new(

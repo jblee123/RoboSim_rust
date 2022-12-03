@@ -2,6 +2,7 @@ use std::any::Any;
 
 use super::color::Color;
 use super::robot_position::RobotPosition;
+use super::vec3d::Vec3d;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum MessageType {
@@ -22,6 +23,30 @@ pub trait Message {
     fn get_type(&self) -> MessageType;
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+pub fn downcast<'a, T: 'static>(msg: &'a Box<dyn Message>, fn_name: &str) -> &'a T {
+    match msg.as_any().downcast_ref::<T>() {
+        Some(m) => m,
+        None => panic!(
+            "Downcast from Message to {} failed in {}().",
+            std::any::type_name::<T>(),
+            fn_name
+        ),
+    }
+}
+
+pub fn downcast_mut<'a, T: 'static>(msg: &'a mut Box<dyn Message>, fn_name: &str) -> &'a mut T {
+    match msg.as_any_mut().downcast_mut::<T>() {
+        Some(m) => m,
+        None => panic!(
+            "Downcast from Message to {} failed in {}().",
+            std::any::type_name::<T>(),
+            fn_name
+        ),
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -137,13 +162,15 @@ impl Message for RequestPositionMsg {
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct PositionMsg {
     pub msg_type: MessageType,
+    pub id: u32,
     pub pos: RobotPosition,
 }
 
 impl PositionMsg {
-    pub fn new(pos: RobotPosition) -> Self {
+    pub fn new(id: u32, pos: RobotPosition) -> Self {
         Self {
             msg_type: MessageType::Position,
+            id: id,
             pos: pos,
         }
     }
@@ -259,11 +286,11 @@ impl Message for GetObstaclesMsg {
 #[derive(Debug, PartialEq, Clone)]
 pub struct ObsReadingsMsg {
     pub msg_type: MessageType,
-    pub readings: Vec<(f32, f32)>,
+    pub readings: Vec<Vec3d<f32>>,
 }
 
 impl ObsReadingsMsg {
-    pub fn new(readings: Vec<(f32, f32)>) -> Self {
+    pub fn new(readings: Vec<Vec3d<f32>>) -> Self {
         Self {
             msg_type: MessageType::ObsReadings,
             readings: readings,

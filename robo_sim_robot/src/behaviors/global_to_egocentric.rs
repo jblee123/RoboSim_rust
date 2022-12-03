@@ -57,7 +57,7 @@ impl GlobalToEgocentric {
         );
 
         self.output = global_pos - robot_pos.location;
-        self.output = self.output.rotated_z(-robot_pos.heading);
+        self.output = self.output.rotated_z(-robot_pos.heading_rad);
         &self.output
     }
 }

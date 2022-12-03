@@ -1,5 +1,8 @@
+use std::collections::HashMap;
+
 use robo_sim_utils::color::*;
 use robo_sim_utils::ray::*;
+use robo_sim_utils::robot_position::*;
 use robo_sim_utils::vec3d::*;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -65,6 +68,23 @@ impl Wall {
     }
 }
 
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub struct Robot {
+    pub id: u32,
+    pub pos: RobotPosition,
+    pub color: Color,
+}
+
+impl Robot {
+    pub fn new(id: u32, pos: RobotPosition, color: Color) -> Self {
+        Self {
+            id: id,
+            pos: pos,
+            color: color,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Environment {
     pub width_m: f32,
@@ -72,6 +92,8 @@ pub struct Environment {
     pub obstacles: Vec<Obstacle>,
     pub walls: Vec<Wall>,
     pub objects: Vec<Object>,
+    pub robots: HashMap<u32, Robot>,
+    pub obstacle_readings: HashMap<u32, Vec<Vec3d<f32>>>,
 }
 
 impl Environment {
@@ -82,6 +104,8 @@ impl Environment {
             obstacles: vec![],
             walls: vec![],
             objects: vec![],
+            robots: HashMap::new(),
+            obstacle_readings: HashMap::new(),
         }
     }
 
@@ -95,6 +119,28 @@ impl Environment {
 
     pub fn add_object(&mut self, object: Object) {
         self.objects.push(object);
+    }
+
+    pub fn add_robot(&mut self, robot: Robot) {
+        self.robots.insert(robot.id, robot);
+    }
+
+    pub fn remove_robot(&mut self, id: u32) {
+        self.robots.remove(&id);
+        self.obstacle_readings.remove(&id);
+    }
+
+    pub fn update_robot_pos(&mut self, id: u32, pos: RobotPosition) {
+        match self.robots.get_mut(&id) {
+            Some(robot) => robot.pos = pos,
+            None => println!("Error: tried to update an unregistered robot: {}", id),
+        }
+    }
+
+    pub fn set_obstacle_readings(&mut self, id: u32, readings: Vec<Vec3d<f32>>) {
+        if self.robots.contains_key(&id) {
+            self.obstacle_readings.insert(id, readings);
+        }
     }
 }
 

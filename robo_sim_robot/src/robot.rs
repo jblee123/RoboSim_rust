@@ -25,7 +25,7 @@ impl Robot {
         x_pos: f32,
         y_pos: f32,
         z_pos: f32,
-        heading: f32,
+        heading_rad: f32,
         color: Color,
         max_vel: f32,
         max_angular_vel: f32,
@@ -38,7 +38,7 @@ impl Robot {
             _ => panic!("Error: robot type '{}' not currently supported", robot_type),
         };
 
-        let pos = RobotPosition::new(Vec3d::new(x_pos, y_pos, z_pos), heading);
+        let pos = RobotPosition::new(Vec3d::new(x_pos, y_pos, z_pos), heading_rad);
 
         if let Err(err) = comm.borrow_mut().open() {
             panic!("Could not open comms connection: {}", err);

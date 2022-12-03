@@ -9,6 +9,12 @@ use std::f64::consts::PI;
 
 use num_traits::Float;
 
+pub const TO_RAD_F64: f64 = PI / 180.0;
+pub const TO_RAD_F32: f32 = TO_RAD_F64 as f32;
+
+pub const TO_DEG_F64: f64 = 180.0 / PI;
+pub const TO_DEG_F32: f32 = TO_DEG_F64 as f32;
+
 pub fn wrap_in_interval<T: Float>(value: T, interval_start: T, interval_end: T) -> T {
     if interval_start == interval_end {
         return interval_start;
@@ -38,6 +44,12 @@ pub fn normalize_angle_2pi<T: Float>(ang_rad: T) -> T {
     let my_zero = T::from(0.0).unwrap();
     let my_2pi = T::from(2.0 * PI).unwrap();
     wrap_in_interval(ang_rad, my_zero, my_2pi)
+}
+
+pub fn normalize_angle_360<T: Float>(ang_deg: T) -> T {
+    let my_zero = T::from(0.0).unwrap();
+    let my_360 = T::from(360.0).unwrap();
+    wrap_in_interval(ang_deg, my_zero, my_360)
 }
 
 #[cfg(test)]

@@ -46,7 +46,7 @@ impl<'a> AvoidObs {
         let mut safety_margin_input_mut = self.safety_margin_input.borrow_mut();
         let mut sphere_of_influence_input_mut = self.sphere_of_influence_input.borrow_mut();
 
-        let obstacles = downcast_input::<Vec<(f32, f32)>>(
+        let obstacles = downcast_input::<Vec<Vec3d<f32>>>(
             obs_list_input_mut.get_output(cycle),
             "AvoidObs",
             "obs_list_input",
@@ -65,8 +65,8 @@ impl<'a> AvoidObs {
         );
 
         self.output = Vec3d::new(0.0, 0.0, 0.0);
-        for (obs_x, obs_y) in obstacles {
-            let mut obs = Vec3d::new(*obs_x, *obs_y, 0.0);
+        for obs in obstacles {
+            let mut obs = Vec3d::new(obs.x, obs.y, 0.0);
             let length = obs.len();
             if length < sphere_of_influence {
                 if length < safety_margin {

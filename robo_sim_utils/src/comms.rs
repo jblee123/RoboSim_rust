@@ -73,11 +73,11 @@ pub fn parse_message(msg_buf: &[u8]) -> Result<Box<dyn Message>, Box<dyn Error>>
 const ALIVE_MSG_LEN: usize = 1 + 4 + (4 * 4) + 4 + (4 * 3);
 const START_MSG_LEN: usize = 1;
 const REQUEST_POSITION_MSG_LEN: usize = 1 + 4;
-const POSITION_MSG_LEN: usize = 1 + (4 * 4);
+const POSITION_MSG_LEN: usize = 1 + 4 + (4 * 4);
 const KILL_MSG_LEN: usize = 1;
 const ROBOT_DYING_MSG_LEN: usize = 1 + 4;
 const GET_OBSTACLES_MSG_LEN: usize = 1 + 4;
-const OBS_READING_SIZE: usize = 8;
+const OBS_READING_SIZE: usize = 12;
 const PAUSE_MSG_LEN: usize = 1;
 const MOVE_MSG_LEN: usize = 1 + 4 + 4 + 4;
 const SPIN_MSG_LEN: usize = 1 + 4 + 4;
@@ -141,7 +141,7 @@ fn parse_alive_message(msg_buf: &[u8]) -> Result<AliveMsg, Box<dyn Error>> {
         f32::from_be_bytes(to_arr_4(msg_buf, 9)),
         f32::from_be_bytes(to_arr_4(msg_buf, 13)),
     );
-    let heading = f32::from_be_bytes(to_arr_4(msg_buf, 17));
+    let heading_rad = f32::from_be_bytes(to_arr_4(msg_buf, 17));
 
     let color = Color::new(msg_buf[21], msg_buf[22], msg_buf[23], msg_buf[24]);
 
@@ -151,7 +151,7 @@ fn parse_alive_message(msg_buf: &[u8]) -> Result<AliveMsg, Box<dyn Error>> {
 
     Ok(AliveMsg::new(
         id,
-        RobotPosition::new(loc, heading),
+        RobotPosition::new(loc, heading_rad),
         color,
         max_vel,
         max_angular_vel,
@@ -169,7 +169,7 @@ pub fn pack_alive_message(msg: AliveMsg) -> Vec<u8> {
     arr4_into_vec(&mut buf, 5, f32::to_be_bytes(msg.pos.location.x));
     arr4_into_vec(&mut buf, 9, f32::to_be_bytes(msg.pos.location.y));
     arr4_into_vec(&mut buf, 13, f32::to_be_bytes(msg.pos.location.z));
-    arr4_into_vec(&mut buf, 17, f32::to_be_bytes(msg.pos.heading));
+    arr4_into_vec(&mut buf, 17, f32::to_be_bytes(msg.pos.heading_rad));
 
     buf[21] = msg.color.r;
     buf[22] = msg.color.g;
@@ -221,14 +221,16 @@ fn parse_position_message(msg_buf: &[u8]) -> Result<PositionMsg, Box<dyn Error>>
     check_msg_buf_len(msg_buf, POSITION_MSG_LEN, "POSITION")?;
     check_msg_buf_expected_type(msg_buf, MessageType::Position, "POSITION")?;
 
+    let id = u32::from_be_bytes(to_arr_4(msg_buf, 1));
+
     let loc = Vec3d::new(
-        f32::from_be_bytes(to_arr_4(msg_buf, 1)),
         f32::from_be_bytes(to_arr_4(msg_buf, 5)),
         f32::from_be_bytes(to_arr_4(msg_buf, 9)),
+        f32::from_be_bytes(to_arr_4(msg_buf, 13)),
     );
-    let heading = f32::from_be_bytes(to_arr_4(msg_buf, 13));
+    let heading_rad = f32::from_be_bytes(to_arr_4(msg_buf, 17));
 
-    Ok(PositionMsg::new(RobotPosition::new(loc, heading)))
+    Ok(PositionMsg::new(id, RobotPosition::new(loc, heading_rad)))
 }
 
 pub fn pack_position_message(msg: PositionMsg) -> Vec<u8> {
@@ -236,10 +238,11 @@ pub fn pack_position_message(msg: PositionMsg) -> Vec<u8> {
 
     buf[0] = msg.msg_type as u8;
 
-    arr4_into_vec(&mut buf, 1, f32::to_be_bytes(msg.pos.location.x));
-    arr4_into_vec(&mut buf, 5, f32::to_be_bytes(msg.pos.location.y));
-    arr4_into_vec(&mut buf, 9, f32::to_be_bytes(msg.pos.location.z));
-    arr4_into_vec(&mut buf, 13, f32::to_be_bytes(msg.pos.heading));
+    arr4_into_vec(&mut buf, 1, u32::to_be_bytes(msg.id));
+    arr4_into_vec(&mut buf, 5, f32::to_be_bytes(msg.pos.location.x));
+    arr4_into_vec(&mut buf, 9, f32::to_be_bytes(msg.pos.location.y));
+    arr4_into_vec(&mut buf, 13, f32::to_be_bytes(msg.pos.location.z));
+    arr4_into_vec(&mut buf, 17, f32::to_be_bytes(msg.pos.heading_rad));
 
     buf
 }
@@ -317,8 +320,10 @@ fn parse_obs_readings_message(msg_buf: &[u8]) -> Result<ObsReadingsMsg, Box<dyn 
         offset += 4;
         let y = f32::from_be_bytes(to_arr_4(msg_buf, offset));
         offset += 4;
+        let z = f32::from_be_bytes(to_arr_4(msg_buf, offset));
+        offset += 4;
 
-        readings.push((x, y));
+        readings.push(Vec3d::<f32>::new(x, y, z));
     }
 
     Ok(ObsReadingsMsg::new(readings))
@@ -330,10 +335,12 @@ pub fn pack_obs_readings_message(msg: ObsReadingsMsg) -> Vec<u8> {
     buf[0] = msg.msg_type as u8;
 
     let mut offset = 1;
-    for (x, y) in msg.readings {
-        arr4_into_vec(&mut buf, offset, f32::to_be_bytes(x));
+    for reading in msg.readings {
+        arr4_into_vec(&mut buf, offset, f32::to_be_bytes(reading.x));
         offset += 4;
-        arr4_into_vec(&mut buf, offset, f32::to_be_bytes(y));
+        arr4_into_vec(&mut buf, offset, f32::to_be_bytes(reading.y));
+        offset += 4;
+        arr4_into_vec(&mut buf, offset, f32::to_be_bytes(reading.z));
         offset += 4;
     }
 
@@ -407,7 +414,7 @@ mod tests {
     fn test_alive_message() {
         let msg = AliveMsg::new(
             3,
-            RobotPosition::new(Vec3d::new(1.5, 2.5, 3.5), 4.5),
+            RobotPosition::new(Vec3d::new(1.5, 2.5, 3.5), 0.5),
             Color::new(100, 150, 160, 1),
             5.0,
             10.0,
@@ -442,7 +449,7 @@ mod tests {
 
     #[test]
     fn test_position_message() {
-        let msg = PositionMsg::new(RobotPosition::new(Vec3d::new(1.5, 2.5, 3.5), 4.5));
+        let msg = PositionMsg::new(RobotPosition::new(Vec3d::new(1.5, 2.5, 3.5), 0.5));
 
         let buf = pack_position_message(msg);
         let msg2 = parse_position_message(buf.as_slice()).unwrap();
